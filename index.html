@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic-SuDo AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: #00ffcc;
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #00ffcc;
+    }
+
+    .rules {
+      max-width: 600px;
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #00ffcc;
+      box-shadow: 0 0 10px #00ffcc33;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(9, 50px);
+      grid-template-rows: repeat(9, 50px);
+      gap: 2px;
+    }
+
+    .cell {
+      width: 50px;
+      height: 50px;
+      background: #111;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+      font-size: 1.2rem;
+      text-align: center;
+      line-height: 50px;
+      cursor: pointer;
+    }
+
+    .cell.filled {
+      background-color: #002020;
+      cursor: not-allowed;
+    }
+
+    .highlight {
+      background-color: #003333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic-SuDo AI</h1>
+  <div class="rules">
+    <strong>Rules:</strong><br>
+    - This is a futuristic fusion of <em>Tic-Tac-Toe</em> and <em>Sudoku</em>.<br>
+    - The board is a 9x9 grid.<br>
+    - Two players (X and O) take turns placing their marks.<br>
+    - You <strong>cannot repeat</strong> your symbol in the same row or column.<br>
+    - The first player to complete <strong>two separate 3-symbol sequences</strong> (horizontal, vertical, or diagonal) wins.<br>
+    - Think tactically — create sequences without blocking yourself.
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <script>
+    const board = document.getElementById('board');
+    let gameState = Array(9).fill().map(() => Array(9).fill(''));
+    let currentPlayer = 'X';
+
+    function renderBoard() {
+      board.innerHTML = '';
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          if (gameState[row][col]) {
+            cell.classList.add('filled');
+            cell.innerText = gameState[row][col];
+          } else {
+            cell.addEventListener('click', () => handleMove(row, col));
+          }
+          board.appendChild(cell);
+        }
+      }
+    }
+
+    function isValidMove(row, col, player) {
+      // Only block row and column repeats for that player
+      for (let i = 0; i < 9; i++) {
+        if (gameState[row][i] === player || gameState[i][col] === player) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function countThreeInARow(player) {
+      let count = 0;
+
+      // Horizontal
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col <= 6; col++) {
+          if (gameState[row][col] === player &&
+              gameState[row][col + 1] === player &&
+              gameState[row][col + 2] === player) {
+            count++;
+          }
+        }
+      }
+
+      // Vertical
+      for (let col = 0; col < 9; col++) {
+        for (let row = 0; row <= 6; row++) {
+          if (gameState[row][col] === player &&
+              gameState[row + 1][col] === player &&
+              gameState[row + 2][col] === player) {
+            count++;
+          }
+        }
+      }
+
+      // Diagonal ↘
+      for (let row = 0; row <= 6; row++) {
+        for (let col = 0; col <= 6; col++) {
+          if (gameState[row][col] === player &&
+              gameState[row + 1][col + 1] === player &&
+              gameState[row + 2][col + 2] === player) {
+            count++;
+          }
+        }
+      }
+
+      // Diagonal ↙
+      for (let row = 0; row <= 6; row++) {
+        for (let col = 2; col < 9; col++) {
+          if (gameState[row][col] === player &&
+              gameState[row + 1][col - 1] === player &&
+              gameState[row + 2][col - 2] === player) {
+            count++;
+          }
+        }
+      }
+
+      return count;
+    }
+
+    function handleMove(row, col) {
+      if (gameState[row][col] !== '') return;
+      if (!isValidMove(row, col, currentPlayer)) {
+        alert('Invalid move: You can’t repeat your symbol in the same row or column.');
+        return;
+      }
+
+      gameState[row][col] = currentPlayer;
+
+      const winCount = countThreeInARow(currentPlayer);
+      if (winCount >= 2) {
+        renderBoard();
+        alert(`Player ${currentPlayer} wins with ${winCount} 3-in-a-rows!`);
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      renderBoard();
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>
