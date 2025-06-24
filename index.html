@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tic-SuDo AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    :root {
+      --pink: #ff00a0;
+      --hotpink: #ff124f;
+      --lightpink: #fe75fe;
+      --purple: #7a04eb;
+      --darkblue: #120458;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      background: #0a0a0a;
-      color: #00ffcc;
-      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to top, var(--darkblue), var(--purple));
+      font-family: 'Quicksand', sans-serif;
+      color: var(--lightpink);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -21,21 +32,32 @@
     }
 
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      text-shadow: 0 0 10px #00ffcc;
+      font-family: 'Quicksand', sans-serif;
+      color: var(--pink);
+      font-size: 3rem;
+      text-shadow: 0 0 10px var(--hotpink);
     }
-/*xxx*/
-    .rules {
-      max-width: 600px;
-      font-size: 1rem;
-      line-height: 1.5;
-      margin-bottom: 30px;
-      background: #111;
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    .rules, .win-overlay {
+      background: rgba(0, 0, 0, 0.7);
       padding: 20px;
+      border: 2px solid var(--pink);
       border-radius: 10px;
-      border: 1px solid #00ffcc;
-      box-shadow: 0 0 10px #00ffcc33;
+      color: var(--lightpink);
+      max-width: 600px;
+      text-align: left;
     }
 
     .board {
@@ -43,14 +65,15 @@
       grid-template-columns: repeat(9, 50px);
       grid-template-rows: repeat(9, 50px);
       gap: 2px;
+      margin-top: 20px;
     }
 
     .cell {
       width: 50px;
       height: 50px;
       background: #111;
-      border: 1px solid #00ffcc;
-      color: #00ffcc;
+      border: 1px solid var(--pink);
+      color: var(--lightpink);
       font-size: 1.2rem;
       text-align: center;
       line-height: 50px;
@@ -58,33 +81,85 @@
     }
 
     .cell.filled {
-      background-color: #002020;
+      background-color: var(--darkblue);
       cursor: not-allowed;
     }
 
-    .highlight {
-      background-color: #003333;
+    .button {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: var(--purple);
+      border: 2px solid var(--pink);
+      color: var(--lightpink);
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--pink);
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .button:hover {
+      background-color: var(--hotpink);
+      color: white;
+    }
+
+    .win-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      font-size: 2rem;
     }
   </style>
 </head>
 <body>
-  <h1>Tic-SuDo AI</h1>
-  <div class="rules">
-    <strong>Rules:</strong><br>
-    - This is a futuristic fusion of <em>Tic-Tac-Toe</em> and <em>Sudoku</em>.<br>
-    - The board is a 9x9 grid.<br>
-    - Two players (X and O) take turns placing their marks.<br>
-    - You <strong>cannot repeat</strong> your symbol in the same row or column.<br>
-    - The first player to complete <strong>two separate 3-symbol sequences</strong> (horizontal, vertical, or diagonal) wins.<br>
-    - Think tactically — create sequences without blocking yourself.
+  <div id="startScreen" class="screen active">
+    <h1>Tic-SuDo AI</h1>
+    <div class="rules">
+      Welcome to the futuristic fusion of Tic-Tac-Toe & Sudoku!<br><br>
+      - 9x9 grid.<br>
+      - Alternate turns between X and O.<br>
+      - Each player may repeat a symbol only once per row and column.<br>
+      - First to form <strong>two 3-symbol sequences</strong> wins!<br>
+      <br>
+      Are you ready to outsmart the grid?
+    </div>
+    <button class="button" onclick="startGame()">Start Playing</button>
   </div>
 
-  <div class="board" id="board"></div>
+  <div id="gameScreen" class="screen">
+    <h1>Tic-SuDo AI</h1>
+    <div class="board" id="board"></div>
+    <button class="button" onclick="restartGame()">🔁 Restart Game</button>
+  </div>
+
+  <div id="winOverlay" class="win-overlay"></div>
 
   <script>
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const winOverlay = document.getElementById('winOverlay');
     const board = document.getElementById('board');
-    let gameState = Array(9).fill().map(() => Array(9).fill(''));
-    let currentPlayer = 'X';
+
+    let gameState;
+    let currentPlayer;
+
+    function startGame() {
+      startScreen.classList.remove('active');
+      gameScreen.classList.add('active');
+      restartGame();
+    }
+
+    function restartGame() {
+      gameState = Array(9).fill().map(() => Array(9).fill(''));
+      currentPlayer = 'X';
+      winOverlay.style.display = 'none';
+      renderBoard();
+    }
 
     function renderBoard() {
       board.innerHTML = '';
@@ -104,19 +179,18 @@
     }
 
     function isValidMove(row, col, player) {
-      // Only block row and column repeats for that player
+      if (gameState[row][col] !== '') return false;
+      let rowCount = 0;
+      let colCount = 0;
       for (let i = 0; i < 9; i++) {
-        if (gameState[row][i] === player || gameState[i][col] === player) {
-          return false;
-        }
+        if (gameState[row][i] === player) rowCount++;
+        if (gameState[i][col] === player) colCount++;
       }
-      return true;
+      return rowCount < 2 && colCount < 2;
     }
 
     function countThreeInARow(player) {
       let count = 0;
-
-      // Horizontal
       for (let row = 0; row < 9; row++) {
         for (let col = 0; col <= 6; col++) {
           if (gameState[row][col] === player &&
@@ -126,8 +200,6 @@
           }
         }
       }
-
-      // Vertical
       for (let col = 0; col < 9; col++) {
         for (let row = 0; row <= 6; row++) {
           if (gameState[row][col] === player &&
@@ -137,8 +209,6 @@
           }
         }
       }
-
-      // Diagonal ↘
       for (let row = 0; row <= 6; row++) {
         for (let col = 0; col <= 6; col++) {
           if (gameState[row][col] === player &&
@@ -148,8 +218,6 @@
           }
         }
       }
-
-      // Diagonal ↙
       for (let row = 0; row <= 6; row++) {
         for (let col = 2; col < 9; col++) {
           if (gameState[row][col] === player &&
@@ -159,31 +227,30 @@
           }
         }
       }
-
       return count;
     }
 
     function handleMove(row, col) {
-      if (gameState[row][col] !== '') return;
       if (!isValidMove(row, col, currentPlayer)) {
-        alert('Invalid move: You can’t repeat your symbol in the same row or column.');
+        alert("Nope, you can't place it there!");
         return;
       }
 
       gameState[row][col] = currentPlayer;
-
       const winCount = countThreeInARow(currentPlayer);
+
       if (winCount >= 2) {
         renderBoard();
-        alert(`Player ${currentPlayer} wins with ${winCount} 3-in-a-rows!`);
+        setTimeout(() => {
+          winOverlay.innerHTML = `🎉 Player ${currentPlayer} WINS 🎉<br><br><button class='button' onclick='restartGame()'>Play Again</button>`;
+          winOverlay.style.display = 'flex';
+        }, 300);
         return;
       }
 
       currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
       renderBoard();
     }
-
-    renderBoard();
   </script>
 </body>
 </html>
