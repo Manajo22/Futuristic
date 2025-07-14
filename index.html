@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tic-SuDo AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.typekit.net/xvl8ddx.css">
   <style>
     :root {
       --pink: #ff00a0;
-      --hotpink: #ff124f;
-      --lightpink: #fe75fe;
-      --purple: #7a04eb;
+      --hotpink: #ff1212;
+      --lightpink: #fff018;
+      --purple: #511cff;
       --darkblue: #120458;
     }
 
@@ -20,8 +21,10 @@
 
     body {
       margin: 0;
-      background: linear-gradient(to top, var(--darkblue), var(--purple));
-      font-family: 'Quicksand', sans-serif;
+      background: #3800b0;
+    font-family: "helvetica-lt-pro", sans-serif;
+font-weight: 400;
+font-style: normal;
       color: var(--lightpink);
       display: flex;
       flex-direction: column;
@@ -29,13 +32,17 @@
       justify-content: flex-start;
       min-height: 100vh;
       padding: 20px;
+      overflow-x: auto;
     }
 
     h1 {
-      font-family: 'Quicksand', sans-serif;
+     font-family: "helvetica-lt-pro", sans-serif;
+font-weight: 700;
+font-style: normal;
       color: var(--pink);
       font-size: 3rem;
-      text-shadow: 0 0 10px var(--hotpink);
+     /* text-shadow: 0 0 10px var(--hotpink);*/
+      margin-bottom: 10px;
     }
 
     .screen {
@@ -44,6 +51,7 @@
       align-items: center;
       justify-content: center;
       text-align: left;
+      width: 100%;
     }
 
     .active {
@@ -58,48 +66,107 @@
       color: var(--lightpink);
       max-width: 600px;
       text-align: left;
+      box-shadow: 0 0 20px rgba(255, 0, 160, 0.3);
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .game-info {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--lightpink);
+    }
+
+    .current-player {
+      color: var(--pink);
+      font-weight: bold;
+      text-shadow: 0 0 5px var(--hotpink);
     }
 
     .board {
       display: grid;
-      grid-template-columns: repeat(9, 50px);
-      grid-template-rows: repeat(9, 50px);
-      gap: 2px;
-      margin-top: 20px;
+      grid-template-columns: repeat(9, 55px);
+      grid-template-rows: repeat(9, 55px);
+      gap: 3px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid var(--pink);
+      box-shadow: 0 0 30px rgba(255, 0, 160, 0.4);
     }
 
     .cell {
-      width: 50px;
-      height: 50px;
-      background: #111;
-      border: 1px solid var(--pink);
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 2px solid var(--purple);
       color: var(--lightpink);
-      font-size: 1.2rem;
+      font-size: 1.4rem;
+      font-weight: bold;
       text-align: center;
-      line-height: 50px;
+      line-height: 51px;
       cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .cell:hover:not(.filled) {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border-color: var(--pink);
+      box-shadow: 0 0 15px var(--pink);
+      transform: scale(1.05);
     }
 
     .cell.filled {
-      background-color: var(--darkblue);
+      background: linear-gradient(135deg, var(--darkblue), var(--purple));
       cursor: not-allowed;
+      color: var(--pink);
+      /*text-shadow: 0 0 8px var(--hotpink);*/
+      /*border-color: var(--hotpink);*/
+    }
+
+    .cell.winning {
+      background: linear-gradient(135deg, var(--hotpink), var(--pink));
+      box-shadow: 0 0 20px var(--pink);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
     .button {
-      margin-top: 30px;
-      padding: 12px 24px;
-      background-color: var(--purple);
+      margin-top: 20px;
+      padding: 15px 30px;
+      background: #511cff;
       border: 2px solid var(--pink);
-      color: var(--lightpink);
-      font-size: 1rem;
+      color: white;
+      font-size: 1.1rem;
       cursor: pointer;
-      box-shadow: 0 0 10px var(--pink);
-      font-family: 'Quicksand', sans-serif;
+      border-radius: 25px;
+      box-shadow: 0 0 15px rgba(255, 0, 160, 0.5);
+      font-family: "helvetica-lt-pro", sans-serif;
+font-weight: 400;
+font-style: normal;
+      font-weight: bold;
+      transition: all 0.3s ease;
     }
 
     .button:hover {
-      background-color: var(--hotpink);
-      color: white;
+      background: linear-gradient(135deg, var(--hotpink), var(--pink));
+      transform: translateY(-2px);
+      box-shadow: 0 5px 25px rgba(255, 0, 160, 0.7);
+    }
+
+    .button:active {
+      transform: translateY(0);
     }
 
     .win-overlay {
@@ -113,6 +180,65 @@
       justify-content: center;
       z-index: 10;
       font-size: 2rem;
+      text-align: center;
+      animation: fadeInScale 0.5s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .stats {
+      display: flex;
+      gap: 30px;
+      margin-top: 15px;
+      font-size: 1rem;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      border: 1px solid var(--purple);
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--pink);
+    }
+
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--hotpink), var(--pink));
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      z-index: 100;
+      animation: slideIn 0.3s ease-out;
+      box-shadow: 0 0 20px rgba(255, 0, 160, 0.6);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -120,21 +246,52 @@
   <div id="startScreen" class="screen active">
     <h1>Tic-SuDo AI</h1>
     <div class="rules">
-      Welcome to the futuristic fusion of Tic-Tac-Toe & Sudoku!<br><br>
-      - 9x9 grid.<br>
-      - Alternate turns between X and O.<br>
-      - Each player may repeat a symbol only once per row and column.<br>
-      - First to form <strong>two 3-symbol sequences</strong> wins!<br>
-      <br>
-      Are you ready to outsmart the grid?
+      <h2 style="color: var(--pink); margin-top: 0;"> Welcome to the Ultimate Grid Challenge!</h2>
+      <p><strong>Tic-SuDo AI</strong> combines the strategy of Tic-Tac-Toe with Sudoku-inspired constraints:</p>
+      
+      <h3 style="color: var(--hotpink);"> Rules:</h3>
+      <ul>
+        <li><strong>9×9 grid</strong> - Much bigger battlefield!</li>
+        <li><strong>Alternate turns</strong> between X and O</li>
+        <li><strong>Sudoku constraint</strong>: Each symbol can appear <em>maximum twice</em> per row and column</li>
+        <li><strong>Victory condition</strong>: First to form <strong>TWO different 3-in-a-row sequences</strong> wins!</li>
+      </ul>
+      
+      <h3 style="color: var(--hotpink);">Strategy Tips:</h3>
+      <ul>
+        <li>-Think ahead - plan your symbol placement carefully</li>
+        <li>-Block your opponent while building your own sequences</li>
+        <li>-Use the constraint to your advantage</li>
+      </ul>
+      
+      <p style="text-align: center; margin-top: 20px; font-size: 1.2rem; color: var(--pink);">
+        <strong>Ready to outsmart the grid?</strong>
+      </p>
     </div>
     <button class="button" onclick="startGame()">Start Playing</button>
   </div>
 
   <div id="gameScreen" class="screen">
     <h1>Tic-SuDo AI</h1>
-    <div class="board" id="board"></div>
-    <button class="button" onclick="restartGame()">🔁 Restart Game</button>
+    <div class="game-container">
+      <div class="game-info">
+        Current Player: <span class="current-player" id="currentPlayerDisplay">X</span>
+      </div>
+      
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="xSequences">0</div>
+          <div>X Sequences</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="oSequences">0</div>
+          <div>O Sequences</div>
+        </div>
+      </div>
+      
+      <div class="board" id="board"></div>
+      <button class="button" onclick="restartGame()">Restart Game</button>
+    </div>
   </div>
 
   <div id="winOverlay" class="win-overlay"></div>
@@ -144,9 +301,13 @@
     const gameScreen = document.getElementById('gameScreen');
     const winOverlay = document.getElementById('winOverlay');
     const board = document.getElementById('board');
+    const currentPlayerDisplay = document.getElementById('currentPlayerDisplay');
+    const xSequencesDisplay = document.getElementById('xSequences');
+    const oSequencesDisplay = document.getElementById('oSequences');
 
     let gameState;
     let currentPlayer;
+    let winningCells = [];
 
     function startGame() {
       startScreen.classList.remove('active');
@@ -157,8 +318,18 @@
     function restartGame() {
       gameState = Array(9).fill().map(() => Array(9).fill(''));
       currentPlayer = 'X';
+      winningCells = [];
       winOverlay.style.display = 'none';
+      updateDisplay();
       renderBoard();
+    }
+
+    function updateDisplay() {
+      currentPlayerDisplay.textContent = currentPlayer;
+      const xCount = countThreeInARow('X');
+      const oCount = countThreeInARow('O');
+      xSequencesDisplay.textContent = xCount;
+      oSequencesDisplay.textContent = oCount;
     }
 
     function renderBoard() {
@@ -167,12 +338,19 @@
         for (let col = 0; col < 9; col++) {
           const cell = document.createElement('div');
           cell.classList.add('cell');
+          
           if (gameState[row][col]) {
             cell.classList.add('filled');
             cell.innerText = gameState[row][col];
+            
+            // Highlight winning cells
+            if (winningCells.some(winCell => winCell.row === row && winCell.col === col)) {
+              cell.classList.add('winning');
+            }
           } else {
             cell.addEventListener('click', () => handleMove(row, col));
           }
+          
           board.appendChild(cell);
         }
       }
@@ -180,59 +358,96 @@
 
     function isValidMove(row, col, player) {
       if (gameState[row][col] !== '') return false;
+      
       let rowCount = 0;
       let colCount = 0;
+      
       for (let i = 0; i < 9; i++) {
         if (gameState[row][i] === player) rowCount++;
         if (gameState[i][col] === player) colCount++;
       }
+      
       return rowCount < 2 && colCount < 2;
     }
 
     function countThreeInARow(player) {
       let count = 0;
+      winningCells = [];
+
+      // Horizontal sequences
       for (let row = 0; row < 9; row++) {
         for (let col = 0; col <= 6; col++) {
           if (gameState[row][col] === player &&
               gameState[row][col + 1] === player &&
               gameState[row][col + 2] === player) {
             count++;
+            if (player === currentPlayer) {
+              winningCells.push({row, col}, {row, col: col + 1}, {row, col: col + 2});
+            }
           }
         }
       }
+
+      // Vertical sequences
       for (let col = 0; col < 9; col++) {
         for (let row = 0; row <= 6; row++) {
           if (gameState[row][col] === player &&
               gameState[row + 1][col] === player &&
               gameState[row + 2][col] === player) {
             count++;
+            if (player === currentPlayer) {
+              winningCells.push({row, col}, {row: row + 1, col}, {row: row + 2, col});
+            }
           }
         }
       }
+
+      // Diagonal sequences (top-left to bottom-right)
       for (let row = 0; row <= 6; row++) {
         for (let col = 0; col <= 6; col++) {
           if (gameState[row][col] === player &&
               gameState[row + 1][col + 1] === player &&
               gameState[row + 2][col + 2] === player) {
             count++;
+            if (player === currentPlayer) {
+              winningCells.push({row, col}, {row: row + 1, col: col + 1}, {row: row + 2, col: col + 2});
+            }
           }
         }
       }
+
+      // Diagonal sequences (top-right to bottom-left)
       for (let row = 0; row <= 6; row++) {
         for (let col = 2; col < 9; col++) {
           if (gameState[row][col] === player &&
               gameState[row + 1][col - 1] === player &&
               gameState[row + 2][col - 2] === player) {
             count++;
+            if (player === currentPlayer) {
+              winningCells.push({row, col}, {row: row + 1, col: col - 1}, {row: row + 2, col: col - 2});
+            }
           }
         }
       }
+
       return count;
+    }
+
+    function showAlert(message) {
+      const alert = document.createElement('div');
+      alert.className = 'alert';
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => alert.remove(), 300);
+      }, 2000);
     }
 
     function handleMove(row, col) {
       if (!isValidMove(row, col, currentPlayer)) {
-        alert("Nope, you can't place it there!");
+        showAlert("Invalid move! Check row/column constraints.");
         return;
       }
 
@@ -242,13 +457,18 @@
       if (winCount >= 2) {
         renderBoard();
         setTimeout(() => {
-          winOverlay.innerHTML = `🎉 Player ${currentPlayer} WINS 🎉<br><br><button class='button' onclick='restartGame()'>Play Again</button>`;
+          winOverlay.innerHTML = `
+            <h2>Player ${currentPlayer} WINS!</h2>
+            <p>Congratulations! You formed ${winCount} three-in-a-row sequences!</p>
+            <button class='button' onclick='restartGame()'>Play Again</button>
+          `;
           winOverlay.style.display = 'flex';
-        }, 300);
+        }, 500);
         return;
       }
 
       currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      updateDisplay();
       renderBoard();
     }
   </script>
